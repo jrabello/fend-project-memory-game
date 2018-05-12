@@ -1,5 +1,5 @@
 // I coded everything using typescript, 
-// quite similar to js and I'm sure you guys will understand :D
+// very similar to js and I'm sure you guys will understand :D
 interface ICardDescriptor {
     uid: string;
     uidFkPair: string;
@@ -68,6 +68,8 @@ function onInit(): void {
 }
 
 function startGame() {
+    console.log(cardMap);
+    console.log(cards);
     cards = shuffle(cards);
     console.log(cards);
 }
