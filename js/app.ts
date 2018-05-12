@@ -87,7 +87,16 @@ function startGame() {
     cards = shuffle(cards);
 
     // put elements into DOM
-
+    const fragment = document.createDocumentFragment();
+    for (const card of cards) {
+        const li = document.createElement('li');
+        const i = document.createElement('i');
+        li.className = `card`;
+        i.className = `fa ${card}`
+        li.appendChild(i);
+        fragment.appendChild(li);
+    }
+    document.querySelector("#deck").appendChild(fragment);
 }
 
 // Shuffle function from http://stackoverflow.com/a/2450976

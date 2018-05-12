@@ -22,6 +22,7 @@ var cards = [
 var defaultCardDescriptor = {
     uid: '',
     uidFkPair: '',
+    "class": '',
     visible: false,
     matched: false
 };
@@ -42,8 +43,8 @@ function onInit() {
         // by storing a reference to it's pair we can check it fast using a hashmap :)
         cards.push(card);
         var cardFkUid = card + ((cards.length).toString());
-        boardDescriptor.cardMap[card] = __assign({}, defaultCardDescriptor, { uid: card, uidFkPair: cardFkUid });
-        boardDescriptor.cardMap[cardFkUid] = __assign({}, defaultCardDescriptor, { uid: cardFkUid, uidFkPair: card });
+        boardDescriptor.cardMap[card] = __assign({}, defaultCardDescriptor, { uid: card, uidFkPair: cardFkUid, "class": card });
+        boardDescriptor.cardMap[cardFkUid] = __assign({}, defaultCardDescriptor, { uid: cardFkUid, uidFkPair: card, "class": card });
     });
     // once we built the cardMap we can start the game
     startGame();
@@ -53,9 +54,20 @@ function onInit() {
  */
 function startGame() {
     console.log(boardDescriptor.cardMap);
-    console.log(cards);
+    // shuffling cards
     cards = shuffle(cards);
-    console.log(cards);
+    // put elements into DOM
+    var fragment = document.createDocumentFragment();
+    for (var _i = 0, cards_1 = cards; _i < cards_1.length; _i++) {
+        var card = cards_1[_i];
+        var li = document.createElement('li');
+        var i = document.createElement('i');
+        li.className = "card";
+        i.className = "fa " + card;
+        li.appendChild(i);
+        fragment.appendChild(li);
+    }
+    document.querySelector("#deck").appendChild(fragment);
 }
 // Shuffle function from http://stackoverflow.com/a/2450976
 function shuffle(array) {
