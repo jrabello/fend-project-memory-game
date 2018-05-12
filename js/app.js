@@ -1,7 +1,15 @@
+var __assign = (this && this.__assign) || Object.assign || function(t) {
+    for (var s, i = 1, n = arguments.length; i < n; i++) {
+        s = arguments[i];
+        for (var p in s) if (Object.prototype.hasOwnProperty.call(s, p))
+            t[p] = s[p];
+    }
+    return t;
+};
 /*
  * Create a list that holds all of your cards
  */
-let cards = [
+var cards = [
     'fa-diamond',
     'fa-anchor',
     'fa-bomb',
@@ -11,13 +19,16 @@ let cards = [
     'fa-paper-plane-o',
     'fa-cube',
 ];
-const defaultCardDescriptor = {
+var defaultCardDescriptor = {
     uid: '',
     uidFkPair: '',
     visible: false,
-    matched: false,
+    matched: false
 };
-const cardMap = {};
+var boardDescriptor = {
+    matchedCards: 0,
+    cardMap: {}
+};
 /*
  * Display the cards on the page
  *   - shuffle the list of cards using the provided "shuffle" method below
@@ -26,18 +37,23 @@ const cardMap = {};
  */
 function onInit() {
     // build card map
-    cards.forEach((card) => {
+    cards.forEach(function (card) {
         // this trick allows me to check another card visibility in O(1)
         // by storing a reference to it's pair we can check it fast using a hashmap :)
         cards.push(card);
-        const cardFkUid = card + ((this.cards.length + 1).toString());
-        cardMap[card] = Object.assign({}, defaultCardDescriptor, { uid: card, uidFkPair: cardFkUid });
-        cardMap[cardFkUid] = Object.assign({}, defaultCardDescriptor, { uid: cardFkUid, uidFkPair: card });
+        var cardFkUid = card + ((cards.length).toString());
+        boardDescriptor.cardMap[card] = __assign({}, defaultCardDescriptor, { uid: card, uidFkPair: cardFkUid });
+        boardDescriptor.cardMap[cardFkUid] = __assign({}, defaultCardDescriptor, { uid: cardFkUid, uidFkPair: card });
     });
     // once we built the cardMap we can start the game
     startGame();
 }
+/**
+ * Starts game
+ */
 function startGame() {
+    console.log(boardDescriptor.cardMap);
+    console.log(cards);
     cards = shuffle(cards);
     console.log(cards);
 }

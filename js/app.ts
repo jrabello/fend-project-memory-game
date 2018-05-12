@@ -1,9 +1,12 @@
-// I coded everything using typescript, 
-// strong typing ftw :D
+/*
+ * I coded everything using typescript, 
+ * strong typing ftw :D
+ */
 type TICardDescriptorList = ICardDescriptor[];
 interface ICardDescriptor {
     uid: string;
     uidFkPair: string;
+    class: string;
     visible: boolean;
     matched: boolean;
 }
@@ -33,10 +36,14 @@ let cards: string[]  = [
 const defaultCardDescriptor: ICardDescriptor = {
     uid: '',
     uidFkPair: '',
+    class: '',
     visible: false,
     matched: false,
 }
-const boardDescriptor: IBoardDescriptor = <IBoardDescriptor>{}
+const boardDescriptor: IBoardDescriptor = <IBoardDescriptor>{
+    matchedCards: 0,
+    cardMap: {}
+}
 
 /*
  * Display the cards on the page
@@ -51,17 +58,19 @@ function onInit(): void {
         // this trick allows me to check another card visibility in O(1)
         // by storing a reference to it's pair we can check it fast using a hashmap :)
         cards.push(card);
-        const cardFkUid = card+((this.cards.length+1).toString());
+        const cardFkUid = card+((cards.length).toString());
         
         boardDescriptor.cardMap[card] = {
             ...defaultCardDescriptor,
             uid: card,
             uidFkPair: cardFkUid,
+            class: card,
         };
         boardDescriptor.cardMap[cardFkUid] = {
             ...defaultCardDescriptor,
             uid: cardFkUid,
             uidFkPair: card,
+            class: card,
         }
     })
 
@@ -69,11 +78,16 @@ function onInit(): void {
     startGame();
 }
 
+/**
+ * Starts game
+ */
 function startGame() {
     console.log(boardDescriptor.cardMap);
-    console.log(cards);
+    // shuffling cards
     cards = shuffle(cards);
-    console.log(cards);
+
+    // put elements into DOM
+
 }
 
 // Shuffle function from http://stackoverflow.com/a/2450976
