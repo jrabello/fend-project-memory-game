@@ -1,5 +1,6 @@
 // I coded everything using typescript, 
-// very similar to js and I'm sure you guys will understand :D
+// strong typing ftw :D
+type TICardDescriptorList = ICardDescriptor[];
 interface ICardDescriptor {
     uid: string;
     uidFkPair: string;
@@ -11,8 +12,9 @@ interface ICardMap {
     [uid: string]: ICardDescriptor;
 }
 
-interface ITableDescriptor {
-
+interface IBoardDescriptor {
+    matchedCards: number;
+    cardMap: ICardMap;
 }
 
 /*
@@ -34,7 +36,7 @@ const defaultCardDescriptor: ICardDescriptor = {
     visible: false,
     matched: false,
 }
-const cardMap: ICardMap = {}
+const boardDescriptor: IBoardDescriptor = <IBoardDescriptor>{}
 
 /*
  * Display the cards on the page
@@ -51,12 +53,12 @@ function onInit(): void {
         cards.push(card);
         const cardFkUid = card+((this.cards.length+1).toString());
         
-        cardMap[card] = {
+        boardDescriptor.cardMap[card] = {
             ...defaultCardDescriptor,
             uid: card,
             uidFkPair: cardFkUid,
         };
-        cardMap[cardFkUid] = {
+        boardDescriptor.cardMap[cardFkUid] = {
             ...defaultCardDescriptor,
             uid: cardFkUid,
             uidFkPair: card,
@@ -68,7 +70,7 @@ function onInit(): void {
 }
 
 function startGame() {
-    console.log(cardMap);
+    console.log(boardDescriptor.cardMap);
     console.log(cards);
     cards = shuffle(cards);
     console.log(cards);
