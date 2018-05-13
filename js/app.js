@@ -64,8 +64,8 @@ var defaultCardDescriptor = {
 var board = {
     cardMap: {},
     selectedCards: [],
-    numberOfMatchedPairCards: 0,
-    numberOfPairCards: cards.length,
+    matchedCardsCount: 0,
+    cardsCount: cards.length,
     waitingAnimationFinish: false
 };
 /**
@@ -94,11 +94,15 @@ function buildCardMap() {
 }
 /**
  * Handles game start init
+ * TODO: move to class Game
  */
 function restartGame() {
     console.log('startGame: ', board.cardMap);
     var start = performance.now();
     // clearing board state
+    board.movesCount = 0;
+    board.matchedCardsCount = 0;
+    document.querySelector('#moves').textContent = board.movesCount.toString();
     for (var key in board.cardMap) {
         if (board.cardMap.hasOwnProperty(key)) {
             board.cardMap[key].visible = board.cardMap[key].matched = false;
@@ -109,8 +113,6 @@ function restartGame() {
     var cardKeysShuffled = shuffle(cardKeys);
     // removing deck if any
     var deck = document.querySelector("#deck");
-    var deck2 = document.querySelector("#deck2");
-    console.log('deck2: ', deck2);
     if (deck) {
         deck.removeEventListener('click', onDeckClicked);
         deck.remove();
@@ -150,68 +152,81 @@ function restartGame() {
 // and handles clicks on cards via event delegation(to avoid lots of handlers)
 function onDeckClicked(event) {
     return __awaiter(this, void 0, void 0, function () {
-        var start, currentCard, previousCard, pairCard;
+        var start, currentCard;
         return __generator(this, function (_a) {
-            switch (_a.label) {
-                case 0:
-                    console.log('deck clicked: ', event);
-                    console.log('startGame: ', board.cardMap);
-                    start = performance.now();
-                    currentCard = getSelectedCard(event.target);
-                    if (!currentCard)
-                        return [2 /*return*/];
-                    // here we have li, so we can get it's id since it's unique
-                    // let currentCard: ICardDescriptor = board.cardMap[clickedHtmlElement.id];
-                    console.log('currentCard: ', currentCard);
-                    // ignoring some click events if matches some constraints 
-                    if (!currentCard ||
-                        currentCard.visible ||
-                        currentCard.matched ||
-                        board.waitingAnimationFinish) {
-                        return [2 /*return*/];
-                    }
-                    // changing card state
-                    currentCard.visible = !currentCard.visible;
-                    getHtmlFromCard(currentCard).classList.toggle('open');
-                    getHtmlFromCard(currentCard).classList.toggle('show');
-                    board.selectedCards.push(currentCard);
-                    // only one card was selected, nothing to handle 
-                    if (board.selectedCards.length === 1)
-                        return [2 /*return*/];
-                    previousCard = board.cardMap[board.selectedCards[0].uid];
-                    if (!(currentCard.uid == previousCard.uidFkPair)) return [3 /*break*/, 3];
-                    pairCard = board.cardMap[previousCard.uid];
-                    currentCard.matched = pairCard.matched = true;
-                    getHtmlFromCard(currentCard).classList.add('match');
-                    getHtmlFromCard(pairCard).classList.add('match');
-                    if (!(++board.numberOfMatchedPairCards === board.numberOfPairCards)) return [3 /*break*/, 2];
-                    return [4 /*yield*/, sleep()];
-                case 1:
-                    _a.sent();
-                    restartGame();
-                    _a.label = 2;
-                case 2: return [3 /*break*/, 5];
-                case 3: 
-                // cards are different :(
-                return [4 /*yield*/, sleep()];
-                case 4:
-                    // cards are different :(
-                    _a.sent();
-                    previousCard.visible = !previousCard.visible;
-                    currentCard.visible = !currentCard.visible;
-                    getHtmlFromCard(previousCard).classList.remove('open');
-                    getHtmlFromCard(previousCard).classList.remove('show');
-                    getHtmlFromCard(currentCard).classList.remove('open');
-                    getHtmlFromCard(currentCard).classList.remove('show');
-                    _a.label = 5;
-                case 5:
-                    //clear selectedCards
-                    board.selectedCards.splice(0, board.selectedCards.length);
-                    console.log(performance.now() - start);
-                    return [2 /*return*/];
+            console.log('deck clicked: ', event);
+            console.log('startGame: ', board.cardMap);
+            start = performance.now();
+            currentCard = getSelectedCard(event.target);
+            if (!currentCard)
+                return [2 /*return*/];
+            // here we have li, so we can get it's id since it's unique
+            // let currentCard: ICardDescriptor = board.cardMap[clickedHtmlElement.id];
+            console.log('currentCard: ', currentCard);
+            // ignoring some click events if matches some constraints 
+            if (!currentCard ||
+                currentCard.visible ||
+                currentCard.matched ||
+                board.waitingAnimationFinish) {
+                return [2 /*return*/];
             }
+            // changing card state
+            currentCard.visible = !currentCard.visible;
+            getHtmlFromCard(currentCard).classList.toggle('open');
+            getHtmlFromCard(currentCard).classList.toggle('show');
+            board.selectedCards.push(currentCard);
+            // updating moves
+            board.movesCount++;
+            document.querySelector('#moves').textContent = board.movesCount.toString();
+            // removing stars from board
+            if (boardGetStarsHtml().length == 3 && board.movesCount >= 8 && board.movesCount <= 16) {
+                boardRemoveStar();
+            }
+            else if (boardGetStarsHtml().length == 2 && board.movesCount > 16)
+                boardRemoveStar();
+            return [2 /*return*/];
         });
     });
+}
+// only one card was selected, nothing to handle 
+if (board.selectedCards.length === 1)
+    return;
+// checking if card pair is equal
+var previousCard = board.cardMap[board.selectedCards[0].uid];
+if (currentCard.uid == previousCard.uidFkPair) {
+    // cards are equal!!! :D
+    // checking if game finished
+    var pairCard = board.cardMap[previousCard.uid];
+    currentCard.matched = pairCard.matched = true;
+    getHtmlFromCard(currentCard).classList.add('match');
+    getHtmlFromCard(pairCard).classList.add('match');
+    if (++board.matchedCardsCount === board.cardsCount) {
+        yield sleep();
+        restartGame();
+    }
+}
+else {
+    // cards are different :(
+    yield sleep();
+    previousCard.visible = !previousCard.visible;
+    currentCard.visible = !currentCard.visible;
+    getHtmlFromCard(previousCard).classList.remove('open');
+    getHtmlFromCard(previousCard).classList.remove('show');
+    getHtmlFromCard(currentCard).classList.remove('open');
+    getHtmlFromCard(currentCard).classList.remove('show');
+}
+//clear selectedCards
+board.selectedCards.splice(0, board.selectedCards.length);
+console.log(performance.now() - start);
+return;
+function boardRemoveStar() {
+    var firstStar = boardGetStarsHtml()[0];
+    document.querySelector('#moves').removeChild(firstStar);
+}
+function boardGetStarsHtml() {
+    var moveContainer = document.querySelector('#moves');
+    var stars = moveContainer.getElementsByTagName('li');
+    return stars;
 }
 function getHtmlFromCard(card) {
     return document.querySelector('#' + card.uid);

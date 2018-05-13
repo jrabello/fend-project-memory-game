@@ -190,8 +190,17 @@ async function onDeckClicked(event: MouseEvent): Promise<void> {
     getHtmlFromCard(currentCard).classList.toggle('open');
     getHtmlFromCard(currentCard).classList.toggle('show');
     board.selectedCards.push(currentCard);
+
+    // updating moves
     board.movesCount++;
     document.querySelector('#moves').textContent = board.movesCount.toString();
+
+    // removing stars from board
+    if( boardGetStarsHtml().length == 3 && board.movesCount >= 8 && board.movesCount <= 16 ){
+        boardRemoveStar();
+    } else if ( boardGetStarsHtml().length == 2 && board.movesCount > 16 ){
+        boardRemoveStar();
+    }
 
     // only one card was selected, nothing to handle 
     if (board.selectedCards.length === 1)
@@ -225,6 +234,17 @@ async function onDeckClicked(event: MouseEvent): Promise<void> {
     board.selectedCards.splice(0, board.selectedCards.length);
     console.log(performance.now() - start);
     return;
+}
+
+function boardRemoveStar() {
+    const firstStar = boardGetStarsHtml()[0];
+    document.querySelector('#moves').removeChild(firstStar);
+}
+
+function boardGetStarsHtml(): NodeListOf<HTMLElement> {
+    const moveContainer = document.querySelector('#moves');
+    const stars = moveContainer.getElementsByTagName('li');
+    return stars;
 }
 
 function getHtmlFromCard(card: ICardDescriptor): HTMLElement {
