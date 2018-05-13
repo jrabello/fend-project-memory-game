@@ -16,10 +16,11 @@ interface ICardMap {
 }
 
 interface IBoardDescriptor {
+    cardsCount: number;
     cardMap: ICardMap;
     selectedCards: TICardDescriptorList;
-    numberOfMatchedPairCards: number;
-    numberOfPairCards: number;
+    matchedCardsCount: number;
+    movesCount: number;
     waitingAnimationFinish: boolean;
 }
 
@@ -46,8 +47,8 @@ const defaultCardDescriptor: ICardDescriptor = {
 const board: IBoardDescriptor = <IBoardDescriptor>{
     cardMap: {},
     selectedCards: [],
-    numberOfMatchedPairCards: 0,
-    numberOfPairCards: cards.length,
+    matchedCardsCount: 0,
+    cardsCount: cards.length,
     waitingAnimationFinish: false,
 }
 
@@ -93,12 +94,16 @@ function buildCardMap(): void {
 
 /**
  * Handles game start init
+ * TODO: move to class Game
  */
 function restartGame(): void {
     console.log('startGame: ', board.cardMap);
     const start = performance.now();
 
     // clearing board state
+    board.movesCount = 0;
+    board.matchedCardsCount = 0;
+    document.querySelector('#moves').textContent = board.movesCount.toString(); 
     for (const key in board.cardMap) {
         if (board.cardMap.hasOwnProperty(key)) {
             board.cardMap[key].visible = board.cardMap[key].matched = false;
@@ -137,6 +142,7 @@ function restartGame(): void {
     }
 
     // inserting deck into DOM
+    
     document.querySelector('#container').appendChild(fragment);
     console.log(performance.now() - start);
 }
@@ -184,6 +190,8 @@ async function onDeckClicked(event: MouseEvent): Promise<void> {
     getHtmlFromCard(currentCard).classList.toggle('open');
     getHtmlFromCard(currentCard).classList.toggle('show');
     board.selectedCards.push(currentCard);
+    board.movesCount++;
+    document.querySelector('#moves').textContent = board.movesCount.toString();
 
     // only one card was selected, nothing to handle 
     if (board.selectedCards.length === 1)
@@ -198,7 +206,7 @@ async function onDeckClicked(event: MouseEvent): Promise<void> {
         currentCard.matched = pairCard.matched = true;
         getHtmlFromCard(currentCard).classList.add('match');
         getHtmlFromCard(pairCard).classList.add('match');
-        if (++board.numberOfMatchedPairCards === board.numberOfPairCards) {
+        if (++board.matchedCardsCount === board.cardsCount) {
             await sleep();
             restartGame();
         }
