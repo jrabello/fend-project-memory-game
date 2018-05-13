@@ -103,7 +103,19 @@ function restartGame(): void {
     // clearing board state
     board.movesCount = 0;
     board.matchedCardsCount = 0;
-    document.querySelector('#moves').textContent = board.movesCount.toString(); 
+    document.querySelector('#moves').textContent = board.movesCount.toString();
+    const stars = boardGetStarsHtml();
+    if(stars.length != 3) {
+        // removes from dom current stars
+        const stars = document.querySelector("#stars")
+        while(stars.firstChild) {
+            stars.removeChild(stars.firstChild);
+        }
+        // adds stars to DOM
+        boardAddStars(3);
+    }
+
+    // sets visible and matched cards to false
     for (const key in board.cardMap) {
         if (board.cardMap.hasOwnProperty(key)) {
             board.cardMap[key].visible = board.cardMap[key].matched = false;
@@ -117,7 +129,7 @@ function restartGame(): void {
     // removing deck if any
     const deck = document.querySelector("#deck")
     if (deck) {
-        deck.removeEventListener('click', onDeckClicked)
+        deck.removeEventListener('click', onBoardClicked)
         deck.remove();
     }
 
@@ -125,7 +137,7 @@ function restartGame(): void {
     const fragment = document.createDocumentFragment();
     const ul = document.createElement('ul');
     ul.id = ul.className = 'deck';
-    ul.addEventListener("click", onDeckClicked);
+    ul.addEventListener("click", onBoardClicked);
     fragment.appendChild(ul);
 
     // building cards
@@ -142,14 +154,13 @@ function restartGame(): void {
     }
 
     // inserting deck into DOM
-    
     document.querySelector('#container').appendChild(fragment);
     console.log(performance.now() - start);
 }
 
 // Listens for clicks on deck
 // and handles clicks on cards via event delegation(to avoid lots of handlers)
-async function onDeckClicked(event: MouseEvent): Promise<void> {
+async function onBoardClicked(event: MouseEvent): Promise<void> {
     console.log('deck clicked: ', event);
     console.log('startGame: ', board.cardMap);
     const start = performance.now();
@@ -229,9 +240,28 @@ function boardRemoveStar() {
     document.querySelector('#stars').removeChild(firstStar);
 }
 
+function boardAddStars(count: number): void {
+    const stars = document.querySelector("#stars")
+    const fragment = document.createDocumentFragment();
+    
+    // adding elements to fragment
+    // _ variable is a pattern used to denote the variable won't be used inside loop
+    for (let _ = 0; _ < count; _++) {
+        const li = document.createElement('li');
+        const i = document.createElement('i');
+
+        i.className = `fa fa-star`;
+
+        li.appendChild(i);
+        fragment.appendChild(li);
+    }
+
+    stars.appendChild(fragment);
+}
+
 function boardGetStarsHtml(): NodeListOf<HTMLElement> {
-    const moveContainer = document.querySelector('#stars');
-    const stars = moveContainer.getElementsByTagName('li');
+    const starContainer = document.querySelector('#stars');
+    const stars = starContainer.getElementsByTagName('li');
     return stars;
 }
 
@@ -256,20 +286,12 @@ function getSelectedCard(element: HTMLElement): ICardDescriptor {
     return board.cardMap[element.id];
 }
 
-async function delay(seconds: number): Promise<void> {
-    return new Promise<void>(resolve => setTimeout(resolve, seconds));
-}
-async function sleep(): Promise<void> {
-    board.waitingAnimationFinish = true;
-    await delay(1000);
-    board.waitingAnimationFinish = false;
-}
 
-// Called when DOM is parsed and ready to be modified
-document.addEventListener("DOMContentLoaded", (event) => {
-    onInit();
-});
 
+
+
+
+// utils.collection
 // Helper functions
 // Fisher-Yates (aka Knuth) Shuffle
 // Shuffle function from http://stackoverflow.com/a/2450976
@@ -286,3 +308,20 @@ function shuffle(array: string[]): string[] {
 
     return array;
 }
+
+// utils.time
+async function delay(seconds: number): Promise<void> {
+    return new Promise<void>(resolve => setTimeout(resolve, seconds));
+}
+async function sleep(): Promise<void> {
+    board.waitingAnimationFinish = true;
+    await delay(1000);
+    board.waitingAnimationFinish = false;
+}
+
+
+
+// Called when DOM is parsed and ready to be modified
+document.addEventListener("DOMContentLoaded", (event) => {
+    onInit();
+});

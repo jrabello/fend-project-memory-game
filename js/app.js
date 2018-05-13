@@ -103,25 +103,36 @@ function restartGame() {
     board.movesCount = 0;
     board.matchedCardsCount = 0;
     document.querySelector('#moves').textContent = board.movesCount.toString();
+    var stars = boardGetStarsHtml();
+    if (stars.length != 3) {
+        // removes from dom current stars
+        var stars_1 = document.querySelector("#stars");
+        while (stars_1.firstChild) {
+            stars_1.removeChild(stars_1.firstChild);
+        }
+        // adds stars to DOM
+        boardAddStars(3);
+    }
+    // sets visible and matched cards to false
     for (var key in board.cardMap) {
         if (board.cardMap.hasOwnProperty(key)) {
             board.cardMap[key].visible = board.cardMap[key].matched = false;
         }
     }
-    // shuffling cards O(n)
+    // shuffling cards
     var cardKeys = Object.keys(board.cardMap);
     var cardKeysShuffled = shuffle(cardKeys);
     // removing deck if any
     var deck = document.querySelector("#deck");
     if (deck) {
-        deck.removeEventListener('click', onDeckClicked);
+        deck.removeEventListener('click', onBoardClicked);
         deck.remove();
     }
     // build deck
     var fragment = document.createDocumentFragment();
     var ul = document.createElement('ul');
     ul.id = ul.className = 'deck';
-    ul.addEventListener("click", onDeckClicked);
+    ul.addEventListener("click", onBoardClicked);
     fragment.appendChild(ul);
     // building cards
     for (var _i = 0, cardKeysShuffled_1 = cardKeysShuffled; _i < cardKeysShuffled_1.length; _i++) {
@@ -138,19 +149,9 @@ function restartGame() {
     document.querySelector('#container').appendChild(fragment);
     console.log(performance.now() - start);
 }
-/*
- * set up the event listener for a card. If a card is clicked:
- *  - display the card's symbol (put this functionality in another function that you call from this one)
- *  - add the card to a *list* of "open" cards (put this functionality in another function that you call from this one)
- *  - if the list already has another card, check to see if the two cards match
- *    + if the cards do match, lock the cards in the open position (put this functionality in another function that you call from this one)
- *    + if the cards do not match, remove the cards from the list and hide the card's symbol (put this functionality in another function that you call from this one)
- *    + increment the move counter and display it on the page (put this functionality in another function that you call from this one)
- *    + if all cards have matched, display a message with the final score (put this functionality in another function that you call from this one)
- */
 // Listens for clicks on deck
 // and handles clicks on cards via event delegation(to avoid lots of handlers)
-function onDeckClicked(event) {
+function onBoardClicked(event) {
     return __awaiter(this, void 0, void 0, function () {
         var start, currentCard, previousCard, pairCard;
         return __generator(this, function (_a) {
@@ -229,9 +230,23 @@ function boardRemoveStar() {
     var firstStar = boardGetStarsHtml()[0];
     document.querySelector('#stars').removeChild(firstStar);
 }
+function boardAddStars(count) {
+    var stars = document.querySelector("#stars");
+    var fragment = document.createDocumentFragment();
+    // adding elements to fragment
+    // _ variable is a pattern used to denote the variable won't be used inside loop
+    for (var _ = 0; _ < count; _++) {
+        var li = document.createElement('li');
+        var i = document.createElement('i');
+        i.className = "fa fa-star";
+        li.appendChild(i);
+        fragment.appendChild(li);
+    }
+    stars.appendChild(fragment);
+}
 function boardGetStarsHtml() {
-    var moveContainer = document.querySelector('#stars');
-    var stars = moveContainer.getElementsByTagName('li');
+    var starContainer = document.querySelector('#stars');
+    var stars = starContainer.getElementsByTagName('li');
     return stars;
 }
 function getHtmlFromCard(card) {
@@ -250,6 +265,22 @@ function getSelectedCard(element) {
     }
     return board.cardMap[element.id];
 }
+// utils.collection
+// Helper functions
+// Fisher-Yates (aka Knuth) Shuffle
+// Shuffle function from http://stackoverflow.com/a/2450976
+function shuffle(array) {
+    var currentIndex = array.length, temporaryValue, randomIndex;
+    while (currentIndex !== 0) {
+        randomIndex = Math.floor(Math.random() * currentIndex);
+        currentIndex -= 1;
+        temporaryValue = array[currentIndex];
+        array[currentIndex] = array[randomIndex];
+        array[randomIndex] = temporaryValue;
+    }
+    return array;
+}
+// utils.time
 function delay(seconds) {
     return __awaiter(this, void 0, void 0, function () {
         return __generator(this, function (_a) {
@@ -276,17 +307,3 @@ function sleep() {
 document.addEventListener("DOMContentLoaded", function (event) {
     onInit();
 });
-// Helper functions
-// Fisher-Yates (aka Knuth) Shuffle
-// Shuffle function from http://stackoverflow.com/a/2450976
-function shuffle(array) {
-    var currentIndex = array.length, temporaryValue, randomIndex;
-    while (currentIndex !== 0) {
-        randomIndex = Math.floor(Math.random() * currentIndex);
-        currentIndex -= 1;
-        temporaryValue = array[currentIndex];
-        array[currentIndex] = array[randomIndex];
-        array[randomIndex] = temporaryValue;
-    }
-    return array;
-}
