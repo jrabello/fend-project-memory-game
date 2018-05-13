@@ -149,15 +149,18 @@ function restartGame(): void {
 // and handles clicks on cards via event delegation(to avoid lots of handlers)
 async function onDeckClicked(event: MouseEvent): Promise<void> {
     console.log('deck clicked: ', event);
+    console.log('startGame: ', board.cardMap);
+    const start = performance.now();
 
-    // here we have li, so we can get it's id since it's unique
-    const clickedHtmlElement: HTMLElement = getSelectedHtml(<HTMLElement>event.target);
+    // filtering clicked html
+    const clickedHtmlElement: HTMLElement = filterSelectedHtml(<HTMLElement>event.target);
     if (!clickedHtmlElement)
-        return;
-
-    // ignoring some click events if matches some constraints 
+    return;
+    
+    // here we have li, so we can get it's id since it's unique
     let currentCard: ICardDescriptor = board.cardMap[clickedHtmlElement.id];
     console.log('currentCard: ', currentCard);
+    // ignoring some click events if matches some constraints 
     if (
         !currentCard ||
         currentCard.visible ||
@@ -201,10 +204,11 @@ async function onDeckClicked(event: MouseEvent): Promise<void> {
 
     //clear selectedCards
     board.selectedCards.splice(0, board.selectedCards.length);
+    console.log(performance.now() - start);
     return;
 }
 
-function getSelectedHtml(element: HTMLElement): HTMLElement {
+function filterSelectedHtml(element: HTMLElement): HTMLElement {
 
     // ignoring click event in some cases
     // when user clicks on deck itself
