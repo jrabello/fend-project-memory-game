@@ -18,7 +18,7 @@ interface ICardMap {
 interface IBoardDescriptor {
     cardMap: ICardMap;
     selectedCards: TICardDescriptorList;
-    numberOfMatchedCards: number;
+    numberOfMatchedPairCards: number;
     numberOfPairCards: number;
     waitingAnimationFinish: boolean;
 }
@@ -46,7 +46,7 @@ const defaultCardDescriptor: ICardDescriptor = {
 const board: IBoardDescriptor = <IBoardDescriptor>{
     cardMap: {},
     selectedCards: [],
-    numberOfMatchedCards: 0,
+    numberOfMatchedPairCards: 0,
     numberOfPairCards: cards.length,
     waitingAnimationFinish: false,
 }
@@ -105,13 +105,13 @@ function restartGame(): void {
         }
     }
 
-    // shuffling cards both O(n)
+    // shuffling cards O(n)
     const cardKeys = Object.keys(board.cardMap);
     const cardKeysShuffled = shuffle(cardKeys);
 
     // removing deck if any
     const deck = document.querySelector("#deck")
-    if (!!deck) {
+    if (deck) {
         deck.removeEventListener('click', onDeckClicked)
         deck.remove();
     }
@@ -152,6 +152,7 @@ function restartGame(): void {
  *    + if all cards have matched, display a message with the final score (put this functionality in another function that you call from this one)
  */
 
+
 // Listens for clicks on deck
 // and handles clicks on cards via event delegation(to avoid lots of handlers)
 async function onDeckClicked(event: MouseEvent): Promise<void> {
@@ -160,13 +161,14 @@ async function onDeckClicked(event: MouseEvent): Promise<void> {
     const start = performance.now();
 
     // filtering clicked html
-    const clickedHtmlElement: HTMLElement = filterSelectedHtml(<HTMLElement>event.target);
-    if (!clickedHtmlElement)
-    return;
+    let currentCard: ICardDescriptor = getSelectedCard(<HTMLElement>event.target);
+    if (!currentCard)
+        return;
     
     // here we have li, so we can get it's id since it's unique
-    let currentCard: ICardDescriptor = board.cardMap[clickedHtmlElement.id];
+    // let currentCard: ICardDescriptor = board.cardMap[clickedHtmlElement.id];
     console.log('currentCard: ', currentCard);
+    
     // ignoring some click events if matches some constraints 
     if (
         !currentCard ||
@@ -179,8 +181,8 @@ async function onDeckClicked(event: MouseEvent): Promise<void> {
 
     // changing card state
     currentCard.visible = !currentCard.visible;
-    clickedHtmlElement.classList.toggle('open');
-    clickedHtmlElement.classList.toggle('show');
+    getHtmlFromCard(currentCard).classList.toggle('open');
+    getHtmlFromCard(currentCard).classList.toggle('show');
     board.selectedCards.push(currentCard);
 
     // only one card was selected, nothing to handle 
@@ -194,7 +196,9 @@ async function onDeckClicked(event: MouseEvent): Promise<void> {
         // checking if game finished
         const pairCard = board.cardMap[previousCard.uid];
         currentCard.matched = pairCard.matched = true;
-        if (++board.numberOfMatchedCards === board.numberOfPairCards) {
+        getHtmlFromCard(currentCard).classList.add('match');
+        getHtmlFromCard(pairCard).classList.add('match');
+        if (++board.numberOfMatchedPairCards === board.numberOfPairCards) {
             await sleep();
             restartGame();
         }
@@ -203,10 +207,10 @@ async function onDeckClicked(event: MouseEvent): Promise<void> {
         await sleep();
         previousCard.visible = !previousCard.visible;
         currentCard.visible = !currentCard.visible;
-        document.querySelector('#'+previousCard.uid).classList.remove('open');
-        document.querySelector('#'+previousCard.uid).classList.remove('show');
-        clickedHtmlElement.classList.remove('open');
-        clickedHtmlElement.classList.remove('show');
+        getHtmlFromCard(previousCard).classList.remove('open');
+        getHtmlFromCard(previousCard).classList.remove('show');
+        getHtmlFromCard(currentCard).classList.remove('open');
+        getHtmlFromCard(currentCard).classList.remove('show');
     }
 
     //clear selectedCards
@@ -215,11 +219,14 @@ async function onDeckClicked(event: MouseEvent): Promise<void> {
     return;
 }
 
-function filterSelectedHtml(element: HTMLElement): HTMLElement {
+function getHtmlFromCard(card: ICardDescriptor): HTMLElement {
+    return document.querySelector('#'+card.uid);
+}
 
-    // ignoring click event in some cases
+function getSelectedCard(element: HTMLElement): ICardDescriptor {
+
+    // ignoring click event
     // when user clicks on deck itself
-    // let clickedHtmlElement: HTMLElement = (<HTMLElement>event.target)
     const nodeName: string = element.nodeName.toLowerCase();
     if (nodeName === 'ul') {
         return;
@@ -230,7 +237,7 @@ function filterSelectedHtml(element: HTMLElement): HTMLElement {
         element = element.parentElement;
     }
 
-    return element;
+    return board.cardMap[element.id];
 }
 
 async function delay(seconds: number): Promise<void> {

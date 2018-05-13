@@ -64,7 +64,7 @@ var defaultCardDescriptor = {
 var board = {
     cardMap: {},
     selectedCards: [],
-    numberOfMatchedCards: 0,
+    numberOfMatchedPairCards: 0,
     numberOfPairCards: cards.length,
     waitingAnimationFinish: false
 };
@@ -104,12 +104,14 @@ function restartGame() {
             board.cardMap[key].visible = board.cardMap[key].matched = false;
         }
     }
-    // shuffling cards both O(n)
+    // shuffling cards O(n)
     var cardKeys = Object.keys(board.cardMap);
     var cardKeysShuffled = shuffle(cardKeys);
     // removing deck if any
     var deck = document.querySelector("#deck");
-    if (!!deck) {
+    var deck2 = document.querySelector("#deck2");
+    console.log('deck2: ', deck2);
+    if (deck) {
         deck.removeEventListener('click', onDeckClicked);
         deck.remove();
     }
@@ -148,17 +150,18 @@ function restartGame() {
 // and handles clicks on cards via event delegation(to avoid lots of handlers)
 function onDeckClicked(event) {
     return __awaiter(this, void 0, void 0, function () {
-        var start, clickedHtmlElement, currentCard, previousCard, pairCard;
+        var start, currentCard, previousCard, pairCard;
         return __generator(this, function (_a) {
             switch (_a.label) {
                 case 0:
                     console.log('deck clicked: ', event);
                     console.log('startGame: ', board.cardMap);
                     start = performance.now();
-                    clickedHtmlElement = filterSelectedHtml(event.target);
-                    if (!clickedHtmlElement)
+                    currentCard = getSelectedCard(event.target);
+                    if (!currentCard)
                         return [2 /*return*/];
-                    currentCard = board.cardMap[clickedHtmlElement.id];
+                    // here we have li, so we can get it's id since it's unique
+                    // let currentCard: ICardDescriptor = board.cardMap[clickedHtmlElement.id];
                     console.log('currentCard: ', currentCard);
                     // ignoring some click events if matches some constraints 
                     if (!currentCard ||
@@ -169,8 +172,8 @@ function onDeckClicked(event) {
                     }
                     // changing card state
                     currentCard.visible = !currentCard.visible;
-                    clickedHtmlElement.classList.toggle('open');
-                    clickedHtmlElement.classList.toggle('show');
+                    getHtmlFromCard(currentCard).classList.toggle('open');
+                    getHtmlFromCard(currentCard).classList.toggle('show');
                     board.selectedCards.push(currentCard);
                     // only one card was selected, nothing to handle 
                     if (board.selectedCards.length === 1)
@@ -179,7 +182,9 @@ function onDeckClicked(event) {
                     if (!(currentCard.uid == previousCard.uidFkPair)) return [3 /*break*/, 3];
                     pairCard = board.cardMap[previousCard.uid];
                     currentCard.matched = pairCard.matched = true;
-                    if (!(++board.numberOfMatchedCards === board.numberOfPairCards)) return [3 /*break*/, 2];
+                    getHtmlFromCard(currentCard).classList.add('match');
+                    getHtmlFromCard(pairCard).classList.add('match');
+                    if (!(++board.numberOfMatchedPairCards === board.numberOfPairCards)) return [3 /*break*/, 2];
                     return [4 /*yield*/, sleep()];
                 case 1:
                     _a.sent();
@@ -194,10 +199,10 @@ function onDeckClicked(event) {
                     _a.sent();
                     previousCard.visible = !previousCard.visible;
                     currentCard.visible = !currentCard.visible;
-                    document.querySelector('#' + previousCard.uid).classList.remove('open');
-                    document.querySelector('#' + previousCard.uid).classList.remove('show');
-                    clickedHtmlElement.classList.remove('open');
-                    clickedHtmlElement.classList.remove('show');
+                    getHtmlFromCard(previousCard).classList.remove('open');
+                    getHtmlFromCard(previousCard).classList.remove('show');
+                    getHtmlFromCard(currentCard).classList.remove('open');
+                    getHtmlFromCard(currentCard).classList.remove('show');
                     _a.label = 5;
                 case 5:
                     //clear selectedCards
@@ -208,10 +213,12 @@ function onDeckClicked(event) {
         });
     });
 }
-function filterSelectedHtml(element) {
-    // ignoring click event in some cases
+function getHtmlFromCard(card) {
+    return document.querySelector('#' + card.uid);
+}
+function getSelectedCard(element) {
+    // ignoring click event
     // when user clicks on deck itself
-    // let clickedHtmlElement: HTMLElement = (<HTMLElement>event.target)
     var nodeName = element.nodeName.toLowerCase();
     if (nodeName === 'ul') {
         return;
@@ -220,7 +227,7 @@ function filterSelectedHtml(element) {
     if (nodeName === 'i') {
         element = element.parentElement;
     }
-    return element;
+    return board.cardMap[element.id];
 }
 function delay(seconds) {
     return __awaiter(this, void 0, void 0, function () {
