@@ -75,16 +75,22 @@ function onInit(): void {
     })
 
     // once we built the cardMap we can start the game
-    startGame();
+    onStartGame();
 }
 
 /**
  * Starts game
  */
-function startGame() {
-    console.log(boardDescriptor.cardMap);
+function onStartGame() {
+    console.log('startGame: ', boardDescriptor.cardMap);
     // shuffling cards
     cards = shuffle(cards);
+    
+    // removing cards from deck if any
+    const deck = document.querySelector("#deck")
+    while(deck.firstChild){
+        deck.removeChild(deck.firstChild)
+    }
 
     // put elements into DOM
     const fragment = document.createDocumentFragment();
@@ -96,7 +102,7 @@ function startGame() {
         li.appendChild(i);
         fragment.appendChild(li);
     }
-    document.querySelector("#deck").appendChild(fragment);
+    deck.appendChild(fragment);
 }
 
 // Shuffle function from http://stackoverflow.com/a/2450976
@@ -126,4 +132,8 @@ function shuffle(array: string[]): string[] {
  */
 document.addEventListener("DOMContentLoaded", function(event) {
     onInit();
+});
+
+document.querySelector("#restart").addEventListener("click", function( event ) {
+    onStartGame();
 });

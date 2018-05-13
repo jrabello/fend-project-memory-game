@@ -47,15 +47,20 @@ function onInit() {
         boardDescriptor.cardMap[cardFkUid] = __assign({}, defaultCardDescriptor, { uid: cardFkUid, uidFkPair: card, "class": card });
     });
     // once we built the cardMap we can start the game
-    startGame();
+    onStartGame();
 }
 /**
  * Starts game
  */
-function startGame() {
-    console.log(boardDescriptor.cardMap);
+function onStartGame() {
+    console.log('startGame: ', boardDescriptor.cardMap);
     // shuffling cards
     cards = shuffle(cards);
+    // removing cards from deck if any
+    var deck = document.querySelector("#deck");
+    while (deck.firstChild) {
+        deck.removeChild(deck.firstChild);
+    }
     // put elements into DOM
     var fragment = document.createDocumentFragment();
     for (var _i = 0, cards_1 = cards; _i < cards_1.length; _i++) {
@@ -67,7 +72,7 @@ function startGame() {
         li.appendChild(i);
         fragment.appendChild(li);
     }
-    document.querySelector("#deck").appendChild(fragment);
+    deck.appendChild(fragment);
 }
 // Shuffle function from http://stackoverflow.com/a/2450976
 function shuffle(array) {
@@ -93,4 +98,7 @@ function shuffle(array) {
  */
 document.addEventListener("DOMContentLoaded", function (event) {
     onInit();
+});
+document.querySelector("#restart").addEventListener("click", function (event) {
+    onStartGame();
 });
