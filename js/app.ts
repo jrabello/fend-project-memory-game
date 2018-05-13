@@ -2,6 +2,7 @@
  * I coded everything using typescript, 
  * strong typing ftw :D
  */
+type TICardDescriptorList = ICardDescriptor[];
 interface ICardDescriptor {
     uid: string;
     uidFkPair: string;
@@ -16,8 +17,9 @@ interface ICardMap {
 
 interface IBoardDescriptor {
     cardMap: ICardMap;
-    matchedCards: number;
-    numberOfCards: number;
+    selectedCards: TICardDescriptorList;
+    numberOfMatchedCards: number;
+    numberOfPairCards: number;
     waitingAnimationFinish: boolean;
 }
 
@@ -41,10 +43,11 @@ const defaultCardDescriptor: ICardDescriptor = {
     visible: false,
     matched: false,
 }
-const boardDescriptor: IBoardDescriptor = <IBoardDescriptor>{
+const board: IBoardDescriptor = <IBoardDescriptor>{
     cardMap: {},
-    matchedCards: 0,
-    numberOfCards: cards.length * 2,
+    selectedCards: [],
+    numberOfMatchedCards: 0,
+    numberOfPairCards: cards.length,
     waitingAnimationFinish: false,
 }
 
@@ -58,7 +61,7 @@ function onInit(): void {
     buildCardMap();
 
     // once we built the cardMap we can start the game
-    onStartGame();
+    restartGame();
 }
 
 /**
@@ -73,13 +76,13 @@ function buildCardMap(): void {
         cards.push(card);
         const cardFkUid = card + ((cards.length).toString());
 
-        boardDescriptor.cardMap[card] = {
+        board.cardMap[card] = {
             ...defaultCardDescriptor,
             uid: card,
             uidFkPair: cardFkUid,
             class: card,
         };
-        boardDescriptor.cardMap[cardFkUid] = {
+        board.cardMap[cardFkUid] = {
             ...defaultCardDescriptor,
             uid: cardFkUid,
             uidFkPair: card,
@@ -91,12 +94,12 @@ function buildCardMap(): void {
 /**
  * Handles game start init
  */
-function onStartGame(): void {
-    console.log('startGame: ', boardDescriptor.cardMap);
+function restartGame(): void {
+    console.log('startGame: ', board.cardMap);
     const start = performance.now();
 
     // shuffling cards both O(n)
-    const cardKeys = Object.keys(boardDescriptor.cardMap);
+    const cardKeys = Object.keys(board.cardMap);
     const cardKeysShuffled = shuffle(cardKeys);
 
     // removing deck if any
@@ -119,8 +122,8 @@ function onStartGame(): void {
         const i = document.createElement('i');
 
         li.className = `card`;
-        li.id = boardDescriptor.cardMap[cardKey].uid;
-        i.className = `fa ${boardDescriptor.cardMap[cardKey].class}`
+        li.id = board.cardMap[cardKey].uid;
+        i.className = `fa ${board.cardMap[cardKey].class}`
 
         li.appendChild(i);
         ul.appendChild(li);
@@ -144,34 +147,88 @@ function onStartGame(): void {
 
 // Listens for clicks on deck
 // and handles clicks on cards via event delegation(to avoid lots of handlers)
-function onDeckClicked(event: MouseEvent): void {
+async function onDeckClicked(event: MouseEvent): Promise<void> {
     console.log('deck clicked: ', event);
-    
-    // ignoring click event in some cases
-    // when user clicks on deck itself
-    let clickedHtmlElement: HTMLElement = (<HTMLElement>event.target)
-    const nodeName: string = clickedHtmlElement.nodeName.toLowerCase();
-    if (nodeName === 'ul') {
-        return;
-    }
-    
-    // if user clicked into i we need to get its parent(li)
-    if (nodeName === 'i') {
-        clickedHtmlElement = clickedHtmlElement.parentElement;
-    }
-    
+
     // here we have li, so we can get it's id since it's unique
-    let currentCard: ICardDescriptor = boardDescriptor.cardMap[clickedHtmlElement.id];
-    
+    const clickedHtmlElement: HTMLElement = getSelectedHtml(<HTMLElement>event.target);
+    if (!clickedHtmlElement)
+        return;
+
     // ignoring some click events if matches some constraints 
-    if (currentCard.matched) {
+    let currentCard: ICardDescriptor = board.cardMap[clickedHtmlElement.id];
+    console.log('currentCard: ', currentCard);
+    if (
+        !currentCard ||
+        currentCard.visible ||
+        currentCard.matched ||
+        board.waitingAnimationFinish
+    ) {
         return;
     }
-    
+
     // changing card state
     currentCard.visible = !currentCard.visible;
     clickedHtmlElement.classList.toggle('open');
     clickedHtmlElement.classList.toggle('show');
+    board.selectedCards.push(currentCard);
+
+    // only one card was selected, nothing to handle 
+    if (board.selectedCards.length === 1)
+        return;
+    
+    // checking if card pair is equal
+    const previousCard = board.cardMap[board.selectedCards[0].uid];
+    if (currentCard.uid == previousCard.uidFkPair) {
+        // cards are equal!!! :D
+        // checking if game finished
+        const pairCard = board.cardMap[previousCard.uid];
+        currentCard.matched = pairCard.matched = true;
+        if (++board.numberOfMatchedCards === board.numberOfPairCards) {
+            await sleep();
+            restartGame();
+        }
+    } else {
+        // cards are different :(
+        await sleep();
+        previousCard.visible = !previousCard.visible;
+        currentCard.visible = !currentCard.visible;
+        document.querySelector('#'+previousCard.uid).classList.remove('open');
+        document.querySelector('#'+previousCard.uid).classList.remove('show');
+        clickedHtmlElement.classList.remove('open');
+        clickedHtmlElement.classList.remove('show');
+    }
+
+    //clear selectedCards
+    board.selectedCards.splice(0, board.selectedCards.length);
+    return;
+}
+
+function getSelectedHtml(element: HTMLElement): HTMLElement {
+
+    // ignoring click event in some cases
+    // when user clicks on deck itself
+    // let clickedHtmlElement: HTMLElement = (<HTMLElement>event.target)
+    const nodeName: string = element.nodeName.toLowerCase();
+    if (nodeName === 'ul') {
+        return;
+    }
+
+    // if user clicked into i we need to get its parent(li)
+    if (nodeName === 'i') {
+        element = element.parentElement;
+    }
+
+    return element;
+}
+
+async function delay(seconds: number): Promise<void> {
+    return new Promise<void>(resolve => setTimeout(resolve, seconds));
+}
+async function sleep(): Promise<void> {
+    board.waitingAnimationFinish = true;
+    await delay(1000);
+    board.waitingAnimationFinish = false;
 }
 
 // Called when DOM is parsed and ready to be modified
