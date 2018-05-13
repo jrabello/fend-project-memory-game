@@ -98,6 +98,12 @@ function buildCardMap() {
 function restartGame() {
     console.log('startGame: ', board.cardMap);
     var start = performance.now();
+    // clearing board state
+    for (var key in board.cardMap) {
+        if (board.cardMap.hasOwnProperty(key)) {
+            board.cardMap[key].visible = board.cardMap[key].matched = false;
+        }
+    }
     // shuffling cards both O(n)
     var cardKeys = Object.keys(board.cardMap);
     var cardKeysShuffled = shuffle(cardKeys);
@@ -142,16 +148,19 @@ function restartGame() {
 // and handles clicks on cards via event delegation(to avoid lots of handlers)
 function onDeckClicked(event) {
     return __awaiter(this, void 0, void 0, function () {
-        var clickedHtmlElement, currentCard, previousCard, pairCard;
+        var start, clickedHtmlElement, currentCard, previousCard, pairCard;
         return __generator(this, function (_a) {
             switch (_a.label) {
                 case 0:
                     console.log('deck clicked: ', event);
-                    clickedHtmlElement = getSelectedHtml(event.target);
+                    console.log('startGame: ', board.cardMap);
+                    start = performance.now();
+                    clickedHtmlElement = filterSelectedHtml(event.target);
                     if (!clickedHtmlElement)
                         return [2 /*return*/];
                     currentCard = board.cardMap[clickedHtmlElement.id];
                     console.log('currentCard: ', currentCard);
+                    // ignoring some click events if matches some constraints 
                     if (!currentCard ||
                         currentCard.visible ||
                         currentCard.matched ||
@@ -164,7 +173,7 @@ function onDeckClicked(event) {
                     clickedHtmlElement.classList.toggle('show');
                     board.selectedCards.push(currentCard);
                     // only one card was selected, nothing to handle 
-                    if (board.selectedCards.length <= 1)
+                    if (board.selectedCards.length === 1)
                         return [2 /*return*/];
                     previousCard = board.cardMap[board.selectedCards[0].uid];
                     if (!(currentCard.uid == previousCard.uidFkPair)) return [3 /*break*/, 3];
@@ -193,12 +202,13 @@ function onDeckClicked(event) {
                 case 5:
                     //clear selectedCards
                     board.selectedCards.splice(0, board.selectedCards.length);
+                    console.log(performance.now() - start);
                     return [2 /*return*/];
             }
         });
     });
 }
-function getSelectedHtml(element) {
+function filterSelectedHtml(element) {
     // ignoring click event in some cases
     // when user clicks on deck itself
     // let clickedHtmlElement: HTMLElement = (<HTMLElement>event.target)

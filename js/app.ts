@@ -98,6 +98,13 @@ function restartGame(): void {
     console.log('startGame: ', board.cardMap);
     const start = performance.now();
 
+    // clearing board state
+    for (const key in board.cardMap) {
+        if (board.cardMap.hasOwnProperty(key)) {
+            board.cardMap[key].visible = board.cardMap[key].matched = false;
+        }
+    }
+
     // shuffling cards both O(n)
     const cardKeys = Object.keys(board.cardMap);
     const cardKeysShuffled = shuffle(cardKeys);
