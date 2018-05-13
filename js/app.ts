@@ -110,7 +110,7 @@ function restartGame(): void {
         }
     }
 
-    // shuffling cards O(n)
+    // shuffling cards
     const cardKeys = Object.keys(board.cardMap);
     const cardKeysShuffled = shuffle(cardKeys);
 
@@ -146,18 +146,6 @@ function restartGame(): void {
     document.querySelector('#container').appendChild(fragment);
     console.log(performance.now() - start);
 }
-
-/*
- * set up the event listener for a card. If a card is clicked:
- *  - display the card's symbol (put this functionality in another function that you call from this one)
- *  - add the card to a *list* of "open" cards (put this functionality in another function that you call from this one)
- *  - if the list already has another card, check to see if the two cards match
- *    + if the cards do match, lock the cards in the open position (put this functionality in another function that you call from this one)
- *    + if the cards do not match, remove the cards from the list and hide the card's symbol (put this functionality in another function that you call from this one)
- *    + increment the move counter and display it on the page (put this functionality in another function that you call from this one)
- *    + if all cards have matched, display a message with the final score (put this functionality in another function that you call from this one)
- */
-
 
 // Listens for clicks on deck
 // and handles clicks on cards via event delegation(to avoid lots of handlers)
@@ -238,11 +226,11 @@ async function onDeckClicked(event: MouseEvent): Promise<void> {
 
 function boardRemoveStar() {
     const firstStar = boardGetStarsHtml()[0];
-    document.querySelector('#moves').removeChild(firstStar);
+    document.querySelector('#stars').removeChild(firstStar);
 }
 
 function boardGetStarsHtml(): NodeListOf<HTMLElement> {
-    const moveContainer = document.querySelector('#moves');
+    const moveContainer = document.querySelector('#stars');
     const stars = moveContainer.getElementsByTagName('li');
     return stars;
 }
