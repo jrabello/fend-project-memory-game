@@ -6,6 +6,7 @@ html {
 *::before,
 *::after {
     box-sizing: inherit;
+    /* border: 1px solid red; */
 }
 
 html,
@@ -17,15 +18,9 @@ body {
 }
 
 body {
-    background: #ffffff url('../img/geometry2.png'); /* Background pattern from Subtle Patterns */
+    background: #ffffff url('../img/geometry2.png');
+    /* Background pattern from Subtle Patterns */
     font-family: 'Coda', cursive;
-}
-
-.container {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    flex-direction: column;
 }
 
 h1 {
@@ -34,26 +29,42 @@ h1 {
 }
 
 /*
- * Styles for the deck of cards
+ * Styles for the game container
  */
+ .container,
+ .score-panel,
+ .deck {
+    max-width: 700px;
+ }
+ 
+.container,
+.game-finish-info {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+    margin: 0 auto;
+}
 
+/*
+ * Styles for the deck and cards
+ */
 .deck {
-    width: 660px;
-    min-height: 680px;
-    background: linear-gradient(160deg, #02ccba 0%, #9BBA1E 100%);
+    margin: 10px 20px;
     padding: 32px;
+    background: linear-gradient(160deg, #02ccba 0%, #9BBA1E 100%);
     border-radius: 10px;
     box-shadow: 12px 15px 20px 0 rgba(46, 61, 73, 0.5);
     display: flex;
     flex-wrap: wrap;
     justify-content: space-between;
     align-items: center;
-    margin: 0 0 3em;
 }
 
 .deck .card {
-    height: 125px;
-    width: 125px;
+    height: 75px;
+    width: 75px;
+    margin: 10px;
     background: #2e3d49;
     font-size: 0;
     color: #ffffff;
@@ -63,6 +74,13 @@ h1 {
     justify-content: center;
     align-items: center;
     box-shadow: 5px 2px 20px 0 rgba(46, 61, 73, 0.5);
+}
+
+@media (min-width: 540px) {
+    .deck .card {
+        height: 125px;
+        width: 125px;
+    }
 }
 
 .deck .card.open {
@@ -84,11 +102,11 @@ h1 {
 /*
  * Styles for the Score Panel
  */
-
 .score-panel {
     text-align: left;
-    width: 345px;
     margin-bottom: 10px;
+    width: 100%;
+    padding: 0 62px;
 }
 
 .score-panel .stars {
@@ -106,4 +124,114 @@ h1 {
 .score-panel .restart {
     float: right;
     cursor: pointer;
+}
+
+.moves-desc {
+    margin-right: auto;
+}
+
+
+/*
+ * Styles for the game finish page
+ */
+.game-finish-info {
+    background-color: white;
+    height: 100%;
+}
+
+.game-finish-info-score {
+    font-size: 1.2rem;
+}
+
+.game-finish-info-btn {
+    margin-top: 10px;
+    padding: 10px;
+    font-size: 1.8rem;
+    font-weight: bold;
+    color: white;
+    background-color: #02ccba;
+    border-radius: 10px;
+}
+
+/*
+ * Styles helper
+ */
+.clickable {
+    cursor: pointer;
+}
+
+.hidden {
+    display: none;
+}
+
+/* 
+    animations
+    taken from https://github.com/IanLunn/Hover 
+*/
+@keyframes hvr-buzz-out {
+    10% {
+        transform: translateX(3px) rotate(2deg);
+    }
+    20% {
+        transform: translateX(-3px) rotate(-2deg);
+    }
+    30% {
+        transform: translateX(3px) rotate(2deg);
+    }
+    40% {
+        transform: translateX(-3px) rotate(-2deg);
+    }
+    50% {
+        transform: translateX(2px) rotate(1deg);
+    }
+    60% {
+        transform: translateX(-2px) rotate(-1deg);
+    }
+    70% {
+        transform: translateX(2px) rotate(1deg);
+    }
+    80% {
+        transform: translateX(-2px) rotate(-1deg);
+    }
+    90% {
+        transform: translateX(1px) rotate(0);
+    }
+    100% {
+        transform: translateX(-1px) rotate(0);
+    }
+}
+
+.hvr-buzz-out {
+    animation-name: hvr-buzz-out;
+    animation-duration: 0.85s;
+    animation-timing-function: linear;
+    animation-iteration-count: 1;
+}
+
+@keyframes hvr-wobble-vertical {
+    16.65% {
+        transform: translateY(8px);
+    }
+    33.3% {
+        transform: translateY(-6px);
+    }
+    49.95% {
+        transform: translateY(4px);
+    }
+    66.6% {
+        transform: translateY(-2px);
+    }
+    83.25% {
+        transform: translateY(1px);
+    }
+    100% {
+        transform: translateY(0);
+    }
+}
+
+.hvr-wobble-vertical {
+    animation-name: hvr-wobble-vertical;
+    animation-duration: 1s;
+    animation-timing-function: ease-in-out;
+    animation-iteration-count: 1;
 }

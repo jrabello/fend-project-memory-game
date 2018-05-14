@@ -1,3 +1,4 @@
+"use strict";
 var __assign = (this && this.__assign) || Object.assign || function(t) {
     for (var s, i = 1, n = arguments.length; i < n; i++) {
         s = arguments[i];
@@ -41,6 +42,8 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
         if (op[0] & 5) throw op[1]; return { value: op[0] ? op[1] : void 0, done: true };
     }
 };
+exports.__esModule = true;
+var game_1 = require("./game");
 /*
  * Create a list that holds all of your cards
  */
@@ -85,12 +88,28 @@ function buildCardMap() {
     // builds card map
     cards.forEach(function (card) {
         // this trick allows me to check another card visibility in O(1)
-        // by storing a reference to it's pair we can check it fast using a hashmap :)
+        // by storing a reference to it's pair we can check it very fast using a hashmap :)
         cards.push(card);
         var cardFkUid = card + ((cards.length).toString());
         board.cardMap[card] = __assign({}, defaultCardDescriptor, { uid: card, uidFkPair: cardFkUid, "class": card });
         board.cardMap[cardFkUid] = __assign({}, defaultCardDescriptor, { uid: cardFkUid, uidFkPair: card, "class": card });
     });
+}
+function onPlayAgain() {
+    // hide finished-info
+    document.querySelector("#game-finish-info").classList.add("hidden");
+    // show game
+    document.querySelector("#game").classList.remove("hidden");
+    restartGame();
+}
+function onGameFinished() {
+    // hide game
+    document.querySelector("#game").classList.add("hidden");
+    // update game-finished div with information
+    document.querySelector("#game-finish-moves").textContent = board.movesCount.toString();
+    document.querySelector("#game-finish-stars").textContent = board.starsCount.toString();
+    // show finished-info
+    document.querySelector("#game-finish-info").classList.remove("hidden");
 }
 /**
  * Handles game start init
@@ -113,6 +132,7 @@ function restartGame() {
         // adds stars to DOM
         boardAddStars(3);
     }
+    board.starsCount = 3;
     // sets visible and matched cards to false
     for (var key in board.cardMap) {
         if (board.cardMap.hasOwnProperty(key)) {
@@ -121,7 +141,8 @@ function restartGame() {
     }
     // shuffling cards
     var cardKeys = Object.keys(board.cardMap);
-    var cardKeysShuffled = shuffle(cardKeys);
+    // const cardKeysShuffled = shuffle(cardKeys);
+    var cardKeysShuffled = cardKeys;
     // removing deck if any
     var deck = document.querySelector("#deck");
     if (deck) {
@@ -146,7 +167,7 @@ function restartGame() {
         ul.appendChild(li);
     }
     // inserting deck into DOM
-    document.querySelector('#container').appendChild(fragment);
+    document.querySelector('#game').appendChild(fragment);
     console.log(performance.now() - start);
 }
 // Listens for clicks on deck
@@ -157,15 +178,11 @@ function onBoardClicked(event) {
         return __generator(this, function (_a) {
             switch (_a.label) {
                 case 0:
-                    console.log('deck clicked: ', event);
-                    console.log('startGame: ', board.cardMap);
                     start = performance.now();
                     currentCard = getSelectedCard(event.target);
+                    // console.log('currentCard: ', currentCard);
                     if (!currentCard)
                         return [2 /*return*/];
-                    // here we have li, so we can get it's id since it's unique
-                    // let currentCard: ICardDescriptor = board.cardMap[clickedHtmlElement.id];
-                    console.log('currentCard: ', currentCard);
                     // ignoring some click events if matches some constraints 
                     if (!currentCard ||
                         currentCard.visible ||
@@ -192,32 +209,39 @@ function onBoardClicked(event) {
                     if (board.selectedCards.length === 1)
                         return [2 /*return*/];
                     previousCard = board.cardMap[board.selectedCards[0].uid];
-                    if (!(currentCard.uid == previousCard.uidFkPair)) return [3 /*break*/, 3];
+                    if (!(currentCard.uid == previousCard.uidFkPair)) return [3 /*break*/, 2];
                     pairCard = board.cardMap[previousCard.uid];
                     currentCard.matched = pairCard.matched = true;
                     getHtmlFromCard(currentCard).classList.add('match');
                     getHtmlFromCard(pairCard).classList.add('match');
-                    if (!(++board.matchedCardsCount === board.cardsCount)) return [3 /*break*/, 2];
-                    return [4 /*yield*/, sleep()];
+                    getHtmlFromCard(previousCard).classList.add("hvr-wobble-vertical");
+                    getHtmlFromCard(currentCard).classList.add("hvr-wobble-vertical");
+                    return [4 /*yield*/, wait()];
                 case 1:
                     _a.sent();
-                    restartGame();
-                    _a.label = 2;
-                case 2: return [3 /*break*/, 5];
-                case 3: 
-                // cards are different :(
-                return [4 /*yield*/, sleep()];
-                case 4:
+                    getHtmlFromCard(previousCard).classList.remove("hvr-wobble-vertical");
+                    getHtmlFromCard(currentCard).classList.remove("hvr-wobble-vertical");
+                    if (++board.matchedCardsCount === board.cardsCount) {
+                        onGameFinished();
+                    }
+                    return [3 /*break*/, 4];
+                case 2:
                     // cards are different :(
+                    getHtmlFromCard(previousCard).classList.add("hvr-buzz-out");
+                    getHtmlFromCard(currentCard).classList.add("hvr-buzz-out");
+                    return [4 /*yield*/, wait()];
+                case 3:
                     _a.sent();
                     previousCard.visible = !previousCard.visible;
                     currentCard.visible = !currentCard.visible;
+                    getHtmlFromCard(previousCard).classList.remove("hvr-buzz-out");
+                    getHtmlFromCard(currentCard).classList.remove("hvr-buzz-out");
                     getHtmlFromCard(previousCard).classList.remove('open');
                     getHtmlFromCard(previousCard).classList.remove('show');
                     getHtmlFromCard(currentCard).classList.remove('open');
                     getHtmlFromCard(currentCard).classList.remove('show');
-                    _a.label = 5;
-                case 5:
+                    _a.label = 4;
+                case 4:
                     //clear selectedCards
                     board.selectedCards.splice(0, board.selectedCards.length);
                     console.log(performance.now() - start);
@@ -228,6 +252,7 @@ function onBoardClicked(event) {
 }
 function boardRemoveStar() {
     var firstStar = boardGetStarsHtml()[0];
+    board.starsCount--;
     document.querySelector('#stars').removeChild(firstStar);
 }
 function boardAddStars(count) {
@@ -288,7 +313,7 @@ function delay(seconds) {
         });
     });
 }
-function sleep() {
+function wait() {
     return __awaiter(this, void 0, void 0, function () {
         return __generator(this, function (_a) {
             switch (_a.label) {
@@ -306,4 +331,6 @@ function sleep() {
 // Called when DOM is parsed and ready to be modified
 document.addEventListener("DOMContentLoaded", function (event) {
     onInit();
+    var game = new game_1.Game();
+    game.start();
 });

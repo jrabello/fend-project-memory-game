@@ -1,3 +1,5 @@
+import { Game } from "./game";
+
 /*
  * I coded everything using typescript, 
  * strong typing ftw :D
@@ -11,18 +13,7 @@ interface ICardDescriptor {
     matched: boolean;
 }
 
-interface ICardMap {
-    [uid: string]: ICardDescriptor;
-}
 
-interface IBoardDescriptor {
-    cardsCount: number;
-    cardMap: ICardMap;
-    selectedCards: TICardDescriptorList;
-    matchedCardsCount: number;
-    movesCount: number;
-    waitingAnimationFinish: boolean;
-}
 
 /*
  * Create a list that holds all of your cards
@@ -73,7 +64,7 @@ function buildCardMap(): void {
     cards.forEach((card: string) => {
 
         // this trick allows me to check another card visibility in O(1)
-        // by storing a reference to it's pair we can check it fast using a hashmap :)
+        // by storing a reference to it's pair we can check it very fast using a hashmap :)
         cards.push(card);
         const cardFkUid = card + ((cards.length).toString());
 
@@ -90,6 +81,26 @@ function buildCardMap(): void {
             class: card,
         }
     })
+}
+
+function onPlayAgain() {
+    // hide finished-info
+    document.querySelector(`#game-finish-info`).classList.add(`hidden`);
+    // show game
+    document.querySelector(`#game`).classList.remove(`hidden`);
+    restartGame();
+}
+
+function onGameFinished() {
+    // hide game
+    document.querySelector(`#game`).classList.add(`hidden`);
+
+    // update game-finished div with information
+    document.querySelector(`#game-finish-moves`).textContent = board.movesCount.toString();
+    document.querySelector(`#game-finish-stars`).textContent = board.starsCount.toString();
+    
+    // show finished-info
+    document.querySelector(`#game-finish-info`).classList.remove(`hidden`);
 }
 
 /**
@@ -114,6 +125,7 @@ function restartGame(): void {
         // adds stars to DOM
         boardAddStars(3);
     }
+    board.starsCount = 3;
 
     // sets visible and matched cards to false
     for (const key in board.cardMap) {
@@ -124,7 +136,8 @@ function restartGame(): void {
 
     // shuffling cards
     const cardKeys = Object.keys(board.cardMap);
-    const cardKeysShuffled = shuffle(cardKeys);
+    // const cardKeysShuffled = shuffle(cardKeys);
+    const cardKeysShuffled = cardKeys;
 
     // removing deck if any
     const deck = document.querySelector("#deck")
@@ -154,25 +167,20 @@ function restartGame(): void {
     }
 
     // inserting deck into DOM
-    document.querySelector('#container').appendChild(fragment);
+    document.querySelector('#game').appendChild(fragment);
     console.log(performance.now() - start);
 }
 
 // Listens for clicks on deck
 // and handles clicks on cards via event delegation(to avoid lots of handlers)
 async function onBoardClicked(event: MouseEvent): Promise<void> {
-    console.log('deck clicked: ', event);
-    console.log('startGame: ', board.cardMap);
     const start = performance.now();
 
     // filtering clicked html
     let currentCard: ICardDescriptor = getSelectedCard(<HTMLElement>event.target);
+    // console.log('currentCard: ', currentCard);
     if (!currentCard)
         return;
-    
-    // here we have li, so we can get it's id since it's unique
-    // let currentCard: ICardDescriptor = board.cardMap[clickedHtmlElement.id];
-    console.log('currentCard: ', currentCard);
     
     // ignoring some click events if matches some constraints 
     if (
@@ -204,7 +212,7 @@ async function onBoardClicked(event: MouseEvent): Promise<void> {
     // only one card was selected, nothing to handle 
     if (board.selectedCards.length === 1)
         return;
-    
+
     // checking if card pair is equal
     const previousCard = board.cardMap[board.selectedCards[0].uid];
     if (currentCard.uid == previousCard.uidFkPair) {
@@ -214,15 +222,23 @@ async function onBoardClicked(event: MouseEvent): Promise<void> {
         currentCard.matched = pairCard.matched = true;
         getHtmlFromCard(currentCard).classList.add('match');
         getHtmlFromCard(pairCard).classList.add('match');
+        getHtmlFromCard(previousCard).classList.add(`hvr-wobble-vertical`);
+        getHtmlFromCard(currentCard).classList.add(`hvr-wobble-vertical`);
+        await wait();
+        getHtmlFromCard(previousCard).classList.remove(`hvr-wobble-vertical`);
+        getHtmlFromCard(currentCard).classList.remove(`hvr-wobble-vertical`);
         if (++board.matchedCardsCount === board.cardsCount) {
-            await sleep();
-            restartGame();
+            onGameFinished();
         }
     } else {
         // cards are different :(
-        await sleep();
+        getHtmlFromCard(previousCard).classList.add(`hvr-buzz-out`);
+        getHtmlFromCard(currentCard).classList.add(`hvr-buzz-out`);
+        await wait();
         previousCard.visible = !previousCard.visible;
         currentCard.visible = !currentCard.visible;
+        getHtmlFromCard(previousCard).classList.remove(`hvr-buzz-out`);
+        getHtmlFromCard(currentCard).classList.remove(`hvr-buzz-out`);
         getHtmlFromCard(previousCard).classList.remove('open');
         getHtmlFromCard(previousCard).classList.remove('show');
         getHtmlFromCard(currentCard).classList.remove('open');
@@ -237,6 +253,7 @@ async function onBoardClicked(event: MouseEvent): Promise<void> {
 
 function boardRemoveStar() {
     const firstStar = boardGetStarsHtml()[0];
+    board.starsCount--;
     document.querySelector('#stars').removeChild(firstStar);
 }
 
@@ -287,41 +304,9 @@ function getSelectedCard(element: HTMLElement): ICardDescriptor {
 }
 
 
-
-
-
-
-// utils.collection
-// Helper functions
-// Fisher-Yates (aka Knuth) Shuffle
-// Shuffle function from http://stackoverflow.com/a/2450976
-function shuffle(array: string[]): string[] {
-    var currentIndex = array.length, temporaryValue, randomIndex;
-
-    while (currentIndex !== 0) {
-        randomIndex = Math.floor(Math.random() * currentIndex);
-        currentIndex -= 1;
-        temporaryValue = array[currentIndex];
-        array[currentIndex] = array[randomIndex];
-        array[randomIndex] = temporaryValue;
-    }
-
-    return array;
-}
-
-// utils.time
-async function delay(seconds: number): Promise<void> {
-    return new Promise<void>(resolve => setTimeout(resolve, seconds));
-}
-async function sleep(): Promise<void> {
-    board.waitingAnimationFinish = true;
-    await delay(1000);
-    board.waitingAnimationFinish = false;
-}
-
-
-
 // Called when DOM is parsed and ready to be modified
 document.addEventListener("DOMContentLoaded", (event) => {
     onInit();
+    const game = new Game();
+    game.start();
 });
