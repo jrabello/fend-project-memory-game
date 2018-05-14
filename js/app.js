@@ -1,3 +1,4 @@
+'use strict';
 /*
  * I coded everything using typescript,
  * strong typing ftw :D
