@@ -1,11 +1,9 @@
 export class Utils {
-
     // Helper functions
     // Fisher-Yates (aka Knuth) Shuffle
     // Shuffle function from http://stackoverflow.com/a/2450976
-    public static shuffle(array: string[]): string[] {
+    static shuffle(array) {
         var currentIndex = array.length, temporaryValue, randomIndex;
-
         while (currentIndex !== 0) {
             randomIndex = Math.floor(Math.random() * currentIndex);
             currentIndex -= 1;
@@ -13,12 +11,9 @@ export class Utils {
             array[currentIndex] = array[randomIndex];
             array[randomIndex] = temporaryValue;
         }
-
         return array;
     }
-
-    public static async  delay(seconds: number): Promise<void> {
-        return new Promise<void>(resolve => setTimeout(resolve, seconds));
+    static async delay(seconds) {
+        return new Promise(resolve => setTimeout(resolve, seconds));
     }
-
 }
