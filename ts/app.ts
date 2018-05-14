@@ -4,45 +4,10 @@ import { Game } from "./game";
  * I coded everything using typescript, 
  * strong typing ftw :D
  */
-type TICardDescriptorList = ICardDescriptor[];
-interface ICardDescriptor {
-    uid: string;
-    uidFkPair: string;
-    class: string;
-    visible: boolean;
-    matched: boolean;
-}
-
-
 
 /*
  * Create a list that holds all of your cards
  */
-let cards: string[] = [
-    'fa-diamond',
-    'fa-anchor',
-    'fa-bomb',
-    'fa-leaf',
-    'fa-bolt',
-    'fa-bicycle',
-    'fa-paper-plane-o',
-    'fa-cube',
-]
-const defaultCardDescriptor: ICardDescriptor = {
-    uid: '',
-    uidFkPair: '',
-    class: '',
-    visible: false,
-    matched: false,
-}
-const board: IBoardDescriptor = <IBoardDescriptor>{
-    cardMap: {},
-    selectedCards: [],
-    matchedCardsCount: 0,
-    cardsCount: cards.length,
-    waitingAnimationFinish: false,
-}
-
 
 /**
  * Called when DOM is loaded
@@ -50,37 +15,11 @@ const board: IBoardDescriptor = <IBoardDescriptor>{
  */
 function onInit(): void {
     // building card map
-    buildCardMap();
+    const game = new Game();
+    game.start();
 
     // once we built the cardMap we can start the game
-    restartGame();
-}
-
-/**
- * Builds card map to allow faster card pair lookup
- */
-function buildCardMap(): void {
-    // builds card map
-    cards.forEach((card: string) => {
-
-        // this trick allows me to check another card visibility in O(1)
-        // by storing a reference to it's pair we can check it very fast using a hashmap :)
-        cards.push(card);
-        const cardFkUid = card + ((cards.length).toString());
-
-        board.cardMap[card] = {
-            ...defaultCardDescriptor,
-            uid: card,
-            uidFkPair: cardFkUid,
-            class: card,
-        };
-        board.cardMap[cardFkUid] = {
-            ...defaultCardDescriptor,
-            uid: cardFkUid,
-            uidFkPair: card,
-            class: card,
-        }
-    })
+    // restartGame();
 }
 
 function onPlayAgain() {
@@ -108,67 +47,67 @@ function onGameFinished() {
  * TODO: move to class Game
  */
 function restartGame(): void {
-    console.log('startGame: ', board.cardMap);
-    const start = performance.now();
+    // console.log('startGame: ', board.cardMap);
+    // const start = performance.now();
 
-    // clearing board state
-    board.movesCount = 0;
-    board.matchedCardsCount = 0;
-    document.querySelector('#moves').textContent = board.movesCount.toString();
-    const stars = boardGetStarsHtml();
-    if(stars.length != 3) {
-        // removes from dom current stars
-        const stars = document.querySelector("#stars")
-        while(stars.firstChild) {
-            stars.removeChild(stars.firstChild);
-        }
-        // adds stars to DOM
-        boardAddStars(3);
-    }
-    board.starsCount = 3;
+    // // clearing board state
+    // board.movesCount = 0;
+    // board.matchedCardsCount = 0;
+    // document.querySelector('#moves').textContent = board.movesCount.toString();
+    // const stars = boardGetStarsHtml();
+    // if(stars.length != 3) {
+    //     // removes from dom current stars
+    //     const stars = document.querySelector("#stars")
+    //     while(stars.firstChild) {
+    //         stars.removeChild(stars.firstChild);
+    //     }
+    //     // adds stars to DOM
+    //     boardAddStars(3);
+    // }
+    // board.starsCount = 3;
 
-    // sets visible and matched cards to false
-    for (const key in board.cardMap) {
-        if (board.cardMap.hasOwnProperty(key)) {
-            board.cardMap[key].visible = board.cardMap[key].matched = false;
-        }
-    }
+    // // sets visible and matched cards to false
+    // for (const key in board.cardMap) {
+    //     if (board.cardMap.hasOwnProperty(key)) {
+    //         board.cardMap[key].visible = board.cardMap[key].matched = false;
+    //     }
+    // }
 
     // shuffling cards
-    const cardKeys = Object.keys(board.cardMap);
-    // const cardKeysShuffled = shuffle(cardKeys);
-    const cardKeysShuffled = cardKeys;
+    // const cardKeys = Object.keys(board.cardMap);
+    // // const cardKeysShuffled = shuffle(cardKeys);
+    // const cardKeysShuffled = cardKeys;
 
-    // removing deck if any
-    const deck = document.querySelector("#deck")
-    if (deck) {
-        deck.removeEventListener('click', onBoardClicked)
-        deck.remove();
-    }
+    // // removing deck if any
+    // const deck = document.querySelector("#deck")
+    // if (deck) {
+    //     deck.removeEventListener('click', onBoardClicked)
+    //     deck.remove();
+    // }
 
-    // build deck
-    const fragment = document.createDocumentFragment();
-    const ul = document.createElement('ul');
-    ul.id = ul.className = 'deck';
-    ul.addEventListener("click", onBoardClicked);
-    fragment.appendChild(ul);
+    // // build deck
+    // const fragment = document.createDocumentFragment();
+    // const ul = document.createElement('ul');
+    // ul.id = ul.className = 'deck';
+    // ul.addEventListener("click", onBoardClicked);
+    // fragment.appendChild(ul);
 
-    // building cards
-    for (const cardKey of cardKeysShuffled) {
-        const li = document.createElement('li');
-        const i = document.createElement('i');
+    // // building cards
+    // for (const cardKey of cardKeysShuffled) {
+    //     const li = document.createElement('li');
+    //     const i = document.createElement('i');
 
-        li.className = `card`;
-        li.id = board.cardMap[cardKey].uid;
-        i.className = `fa ${board.cardMap[cardKey].class}`
+    //     li.className = `card`;
+    //     li.id = board.cardMap[cardKey].uid;
+    //     i.className = `fa ${board.cardMap[cardKey].class}`
 
-        li.appendChild(i);
-        ul.appendChild(li);
-    }
+    //     li.appendChild(i);
+    //     ul.appendChild(li);
+    // }
 
-    // inserting deck into DOM
-    document.querySelector('#game').appendChild(fragment);
-    console.log(performance.now() - start);
+    // // inserting deck into DOM
+    // document.querySelector('#game').appendChild(fragment);
+    // console.log(performance.now() - start);
 }
 
 // Listens for clicks on deck
@@ -307,6 +246,4 @@ function getSelectedCard(element: HTMLElement): ICardDescriptor {
 // Called when DOM is parsed and ready to be modified
 document.addEventListener("DOMContentLoaded", (event) => {
     onInit();
-    const game = new Game();
-    game.start();
 });

@@ -1,31 +1,20 @@
-interface ICardMap {
-    [uid: string]: ICardDescriptor;
-}
-
-interface IBoardDescriptor {
-    cardsCount: number;
-    cardMap: ICardMap;
-    selectedCards: TICardDescriptorList;
-    matchedCardsCount: number;
-    movesCount: number;
-    waitingAnimationFinish: boolean;
-    starsCount: number;
-}
+import { Board } from "./board";
 
 export class Game {
-
-    board: IBoardDescriptor;
+    private board: Board;
 
     constructor() {
-
+        // building card map
+        this.board = new Board();
     }
     
     start(): void {
-console.log(`start`);
-
+        console.log(`start`);
+        this.board.init();
     }
 
     finish(): void {
 
     }
+    
 }

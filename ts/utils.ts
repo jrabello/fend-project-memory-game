@@ -1,6 +1,5 @@
 export class Utils {
 
-    // utils.collection
     // Helper functions
     // Fisher-Yates (aka Knuth) Shuffle
     // Shuffle function from http://stackoverflow.com/a/2450976
@@ -18,15 +17,14 @@ export class Utils {
         return array;
     }
 
-    // utils.time
     public static async  delay(seconds: number): Promise<void> {
         return new Promise<void>(resolve => setTimeout(resolve, seconds));
     }
 
-    public static async  wait(): Promise<void> {
-        board.waitingAnimationFinish = true;
-        await delay(1000);
-        board.waitingAnimationFinish = false;
+    public static async wait(): Promise<void> {
+        // board.waitingAnimationFinish = true;
+        await Utils.delay(1000);
+        // board.waitingAnimationFinish = false;
     }
 
 }
