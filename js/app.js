@@ -149,8 +149,8 @@ class Board {
 
         // shuffling cards
         const cardKeys = Object.keys(this.cardMap);
-        // const cardKeysShuffled = Utils.shuffle(cardKeys);
-        const cardKeysShuffled = cardKeys;
+        const cardKeysShuffled = Utils.shuffle(cardKeys);
+        // const cardKeysShuffled = cardKeys;
 
         // building deck with cards
         this.buildDeck(cardKeysShuffled);
