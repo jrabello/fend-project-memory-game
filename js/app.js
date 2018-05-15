@@ -81,7 +81,7 @@ class Card {
 
 class Board {
     constructor(game) {
-        this.game = game;
+        this.game = game
         Board.instance = this;
         let cards = [
             'fa-diamond',
@@ -149,8 +149,8 @@ class Board {
 
         // shuffling cards
         const cardKeys = Object.keys(this.cardMap);
-        const cardKeysShuffled = Utils.shuffle(cardKeys);
-        // const cardKeysShuffled = cardKeys;
+        // const cardKeysShuffled = Utils.shuffle(cardKeys);
+        const cardKeysShuffled = cardKeys;
 
         // building deck with cards
         this.buildDeck(cardKeysShuffled);
@@ -323,28 +323,66 @@ class Board {
     }
 }
 
+class Score {
+    constructor(game) {
+        Score.seconds = 0;
+        this.timerRef = null;
+    }
+
+    init() {
+        // update ui and model
+        Score.seconds = 0;
+        document.querySelector(`#time-played`).textContent = Score.seconds.toString();
+        
+        // starts timer
+        if(this.timerRef)
+            this.stop();
+        this.timerRef = setInterval(this.onEverySecond, 1000);
+    }
+
+    // stops timer
+    stop() {
+        clearInterval(this.timerRef);
+    }
+
+    onEverySecond() {
+        // update ui and model
+        Score.seconds++;
+        document.querySelector(`#time-played`).textContent = Score.seconds.toString();
+    }
+}
+
 class Game {
     constructor() {
         this.board = new Board(this);
+        this.score = new Score(this);
     }
 
     start() {
         this.board.init();
+        this.score.init();
     }
 
     finish() {
         // hide game
         document.querySelector(`#game`).classList.add(`hidden`);
+
         // update game-finished div with information
         document.querySelector(`#game-finish-moves`).textContent = this.board.getMovesCount().toString();
         document.querySelector(`#game-finish-stars`).textContent = this.board.getStarsCount().toString();
+        
         // show finished-info
         document.querySelector(`#game-finish-info`).classList.remove(`hidden`);
+        document.querySelector(`#game-finish-time`).textContent = Score.seconds.toString();
+
+        // canceling timer
+        this.score.stop();
     }
 
     onPlayAgain() {
         // hide finished-info
         document.querySelector(`#game-finish-info`).classList.add(`hidden`);
+
         // show game
         document.querySelector(`#game`).classList.remove(`hidden`);
         this.start();
@@ -368,10 +406,7 @@ function onInit() {
     });
 }
 
-
 // Called when DOM is parsed and ready to be modified
 document.addEventListener("DOMContentLoaded", (event) => {
     onInit();
 });
-
-

@@ -26,6 +26,7 @@ body {
 h1 {
     font-family: 'Open Sans', sans-serif;
     font-weight: 300;
+    color: #4e4b4b;
 }
 
 /*
@@ -51,7 +52,7 @@ h1 {
  */
 .deck {
     margin: 10px 20px;
-    padding: 32px;
+    padding: 16px;
     background: linear-gradient(160deg, #02ccba 0%, #9BBA1E 100%);
     border-radius: 10px;
     box-shadow: 12px 15px 20px 0 rgba(46, 61, 73, 0.5);
@@ -64,7 +65,7 @@ h1 {
 .deck .card {
     height: 75px;
     width: 75px;
-    margin: 10px;
+    margin: 5px;
     background: #2e3d49;
     font-size: 0;
     color: #ffffff;
@@ -77,9 +78,13 @@ h1 {
 }
 
 @media (min-width: 540px) {
+    .deck {
+        padding: 32px;
+    }
     .deck .card {
         height: 125px;
         width: 125px;
+        margin: 10px;
     }
 }
 
@@ -103,10 +108,13 @@ h1 {
  * Styles for the Score Panel
  */
 .score-panel {
+    display: flex;
+    justify-content: space-between;
     text-align: left;
     margin-bottom: 10px;
     width: 100%;
     padding: 0 62px;
+    color: #4e4b4b;
 }
 
 .score-panel .stars {
@@ -126,8 +134,8 @@ h1 {
     cursor: pointer;
 }
 
-.moves-desc {
-    margin-right: auto;
+.seconds-container {
+   margin-right: 10px;
 }
 
 

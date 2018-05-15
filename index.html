@@ -11,41 +11,59 @@
 </head>
 
 <body>
-
+  <!-- game -->
   <div id="game" class="container">
     <header>
       <h1>Memory Game</h1>
     </header>
 
+    <!-- score -->
     <section id="score-panel" class="score-panel">
-      <ul id="stars" class="stars">
-        <li>
-          <i class="fa fa-star"></i>
-        </li>
-        <li>
-          <i class="fa fa-star"></i>
-        </li>
-        <li>
-          <i class="fa fa-star"></i>
-        </li>
-      </ul>
 
-      <span id="moves" class="moves"></span>
-      <span class="moves-desc" > Moves </span>
+      <span>
+        <!-- stars -->
+        <ul id="stars" class="stars">
+          <li>
+            <i class="fa fa-star"></i>
+          </li>
+          <li>
+            <i class="fa fa-star"></i>
+          </li>
+          <li>
+            <i class="fa fa-star"></i>
+          </li>
+        </ul>
 
-      <div id="restart" class="restart">
-        <i class="fa fa-repeat"></i>
-      </div>
+        <!-- moves -->
+        <span id="moves" class="moves">0</span>
+        <span class="moves-desc"> Moves </span>
+      </span>
+
+      <span>
+        <!-- seconds -->
+        <span class="seconds-container">
+          <span id="time-played">0</span>s
+        </span>
+
+        <!-- restart btn -->
+        <div id="restart" class="restart">
+          <i class="fa fa-repeat"></i>
+        </div>
+      </span>
+
     </section>
 
   </div>
 
+  <!-- finished screen -->
   <div id="game-finish-info" class="hidden game-finish-info ">
     <h1>Congratulations! You Won!</h1>
     <p class="game-finish-info-score">With
       <span id="game-finish-moves">1</span> moves and
-      <span id="game-finish-stars">1</span>stars</p>
-    <button id="play-again" class="game-finish-info-btn clickable" >
+      <span id="game-finish-stars">1</span> stars and
+      <span id="game-finish-time">1</span> seconds
+    </p>
+    <button id="play-again" class="game-finish-info-btn clickable">
       Play again!
     </button>
   </div>
