@@ -7,4 +7,3 @@ This project was created for udacity`s nanodegree project, the most interesting 
 In this game you have to guess two cards from the same class into a board full of pairs of cards
 
 Try to get as much as possible stars in less time, cards are not visible, so it`s great way to train your memory!
-
