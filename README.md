@@ -7,6 +7,8 @@ This project was created for udacity`s nanodegree project, the most interesting 
 </p>
 
 ## Usage
+You can play online going to:
+[link](https://jrabello.github.io/fend-project-memory-game/)
 
 In this game you have to guess two cards from the same class into a board full of pairs of cards
 
